@@ -20,7 +20,14 @@
       <h3>Basic hello-world demo</h3>
       <demo-snippet>
         <template>
-          <hello-world></hello-world>
+          <hello-world title="First" theme="light">
+              <p>Additional Info</p>
+              <p>Additional Info</p>
+              <div slot="bottom"><em class="info">Use carefully</em></div>
+          </hello-world>
+          <hello-world title="Second" sub-title="subtitle" theme="dark"></hello-world>
+          <hello-world title="First"  sub-title="subtitle" theme="light" disabled="true"></hello-world>
+          <hello-world title="Second" theme="dark" disabled="true"></hello-world>
         </template>
       </demo-snippet>
     </div>

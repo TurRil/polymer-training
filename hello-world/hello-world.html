@@ -19,9 +19,63 @@ A LRN element
     <style>
       :host {
         display: block;
+        padding: 0.3em;
+        margin: 0.3em;
+        --hello-world-border-color: #ddd;
+        border: 1px solid;
+        border-color: var(--hello-world-border-color);
+      }
+      h2 {
+        /*color: #069;*/
+      }
+      :host[theme=light] {
+        color: darkcyan;
+        background: #eee;
+      }
+      :host[theme=dark] {
+        color: lightcyan;
+        background: #444;
+      }
+      :host[disabled] {
+        opacity: .3;
+      }
+      #button {
+        float: right;
+        width: 20px;
+        height: 20px;
+      }
+      #slot {
+        font-size: 80%;
+        color: #222;
+      }
+
+      /* access inside shadow dom - not recommended */
+      :host ::shadow .info {
+        color: red;
       }
     </style>
-    <h2>[[title]]</h2>
+
+    <button id="button">
+      <template is="dom-if" if="[[disabled]]">
+          x
+      </template>
+      <template is="dom-if" if="[[!disabled]]">
+          -
+      </template>
+    </button>
+    <!--
+      <button id="button">[[_buttonText]]</button>
+    -->
+    <h2>[[fullTitle]]</h2>
+    
+    <button id="submit" type="button">
+      <slot name="bottom"></slot>
+    </button>
+    <div id="slot">
+        <!-- catch all last slot cnnot be before named slot otherwise it WILL just use this one-->
+        <slot></slot>
+      </div>
+
   </template>
 
   <script>
@@ -30,12 +84,85 @@ A LRN element
       is: 'hello-world',
       properties: {
         /**
-         * Title
+         * Title to be displayed
          */
         title: {
           type: String,
+          value: ''
         },
+        subTitle: {
+          type: String,
+          value: ''
+        },
+        fullTitle: {
+          type: String,
+          //computed: '_computeFullTitle(title, subTitle)',
+        },
+        /**
+         * Theme allows user to choose a theme, values:
+         * - light
+         * - dark
+         */
+        theme: {
+          type: String,
+          value: 'light',
+          reflectToAttribute: true,  
+        },
+        /**
+         * Disabled State
+         */
+        disabled: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        }
+
+        // its better to do the disabled button test as a computed function
       },
+      listeners: {
+        //'click' - mousedown - delay - mouseup : 300ms 
+        'button.tap': '_tapHandler' // private function - if not in template
+      },
+      observers: [
+        '_observeFullTitle(title, subTitle)',
+        //'_disabledStateChanged(disabled)'
+      ],
+      alert: function() {
+        const message = this.disabled ? 'active' : 'inactive';
+        alert('${this.fullTitle} [${message}]');
+      },
+      _tapHandler: function(event) {
+        //console.log('tap: ' + this.title);
+        this.disabled = !this.disabled;
+      },
+      _computeFullTitle: function(title, sub) {
+        //console.log(sub);
+        if (typeof sub !== 'undefined' && sub !== '') {
+          return title +'<small>'+ sub + '</small>';
+        }
+        return title;
+      },
+      _observeFullTitle: function(title, sub) {
+        //console.log(sub);
+        if (typeof sub !== 'undefined' && sub !== '') {
+          this.fullTitle = title +'<small>'+ sub + '</small>';
+        } else {
+          this.fullTitle = title;
+        }
+      },
+      _disabledStateChanged: function(disabled) {
+        this.alert();
+      },
+      ready: function() {
+        console.log('ready!');
+        // el.addEventListener('click', () => {});
+        /*
+        this.$$('#button').addEventListener('tap', (e) => {
+          console.log('tap: ' + this.title);
+          this.disabled = !this.disabled;
+        });
+        */
+      }
     });
   </script>
 </dom-module>
